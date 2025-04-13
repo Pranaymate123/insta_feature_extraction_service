@@ -45,8 +45,8 @@ async def extract_features_from_instagram(profile_url: str) -> dict:
     features = {
         "username_length": len(username),
         "num_digits_in_username": count_digits(username),
-        "profile_has_picture": bool(data.get("profilePicUrlHD")),
-        "profile_has_bio": bool(bio.strip()),
+        "profile_has_picture": int(bool(data.get("profilePicUrlHD"))),
+        "profile_has_bio": int(bool(bio.strip())),
         "bio_word_count": len(bio.split()),
         "spam_word_count": count_word_occurrences(bio, SPAM_WORDS),
         "suspicious_words_in_bio": count_word_occurrences(bio, SUSPICIOUS_WORDS),
@@ -56,8 +56,8 @@ async def extract_features_from_instagram(profile_url: str) -> dict:
         "friend_follower_ratio": round(follows / (followers + 1e-5), 2),
         "posts_count": posts,
         "activity_score": round((posts + highlight_reels) / (followers + 1), 2),
-        "joined_recently": data.get("joinedRecently", False),
-        "is_verified": data.get("verified", False),
+        "joined_recently": int(data.get("joinedRecently", False)),
+        "is_verified": int(data.get("verified", False)),
     }
 
     return features

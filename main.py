@@ -3,6 +3,7 @@ from app.schemas import ProfileListRequest, FeatureResponse
 from app.extractor import extract_features_from_instagram
 from typing import List
 import logging
+import uvicorn  # ✅ Add this
 
 # Initialize FastAPI app
 app = FastAPI(title="Instagram Feature Extraction Service")
@@ -32,3 +33,10 @@ async def extract_profiles(request: ProfileListRequest):
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred while processing profiles.")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
+
+    # Command use to run this python main.py ( Will take port 8001)
+    # uvicorn main:app --port 8001 --reload (manual option )

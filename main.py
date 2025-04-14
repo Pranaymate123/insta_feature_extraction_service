@@ -1,3 +1,5 @@
+from dbm import error
+
 from fastapi import FastAPI, HTTPException
 from app.errors import ERRORS
 from app.exception_handler import invalid_url_exception_handler
@@ -5,13 +7,15 @@ from app.exceptions import InvalidUrlException
 from app.schemas import ProfileListRequest, BulkProfilesRequest, PredictionResponse
 from app.extractor import extract_features_from_instagram
 from app.prediction_client import predict_profiles
+from app.exceptions import GenericInternalException
+from app.exception_handler import generic_internal_exception_handler
 import logging
 import uvicorn
 
 app = FastAPI(title="Instagram Feature Extraction Service")
 logging.basicConfig(level=logging.INFO)
 
-@app.post("/extract", response_model=PredictionResponse)
+@app.post("/predict", response_model=PredictionResponse)
 async def extract_profiles(request: ProfileListRequest):
     try:
         # Validate the URLs first
@@ -35,6 +39,8 @@ async def extract_profiles(request: ProfileListRequest):
 
         return prediction_response
 
+    except GenericInternalException as e:
+        raise e
     except InvalidUrlException as e:
         raise e
 
@@ -47,3 +53,5 @@ if __name__ == "__main__":
 
 # Register custom exception handler
 app.add_exception_handler(InvalidUrlException, invalid_url_exception_handler)
+app.add_exception_handler(GenericInternalException, generic_internal_exception_handler)
+

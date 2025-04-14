@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 import httpx
 import logging
 from app.config import PREDICTION_SERVICE_URL
@@ -14,4 +16,4 @@ async def predict_profiles(request_data: BulkProfilesRequest) -> PredictionRespo
             return PredictionResponse(**response.json())
     except Exception as e:
         logging.error(f"Prediction service error: {e}")
-        raise
+        raise HTTPException(status_code=502, detail="Error while communicating with the prediction service.")

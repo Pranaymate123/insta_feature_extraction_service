@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
 
 class ProfileListRequest(BaseModel):
     profile_urls: List[str]
@@ -36,3 +37,9 @@ class PredictionResponse(BaseModel):
     code: int
     message: str
     data: List[PredictionResponseItem]
+
+
+class ErrorResponse(BaseModel):
+    code: int
+    message: str
+    details: Optional[str] = None

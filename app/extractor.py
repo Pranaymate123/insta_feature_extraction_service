@@ -3,6 +3,8 @@ from apify_client import ApifyClient
 import logging
 from fastapi import HTTPException
 from app.config import APIFY_API_TOKEN, SPAM_WORDS, SUSPICIOUS_WORDS
+from app.errors import ERRORS
+from app.exceptions import GenericInternalException
 from app.utils import *
 
 logging.basicConfig(level=logging.INFO)
@@ -28,12 +30,18 @@ async def extract_features_from_instagram(profile_urls: list) -> list:
         # Fetch results from dataset
         scraped_data = list(client.dataset(run["defaultDatasetId"]).iterate_items())
 
+    except GenericInternalException as e:
+        raise e
+
     except Exception as e:
         logging.error(f"Apify client error: {str(e)}")
-        raise HTTPException(
-            status_code=502,
-            detail="Failed to fetch Instagram profiles from Apify."
+        raise GenericInternalException(
+            code=ERRORS["INTERNAL_ERROR"]["code"],
+            message=ERRORS["INTERNAL_ERROR"]["message"],
+            details="Failed during profile extraction."
         )
+
+
 
     features_list = []
     for profile_data in scraped_data:
@@ -63,5 +71,5 @@ async def extract_features_from_instagram(profile_urls: list) -> list:
 
         features_list.append(features)
 
-    print(features_list)
+    print("Feature List" , features_list)
     return features_list

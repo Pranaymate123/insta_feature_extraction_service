@@ -41,8 +41,8 @@ ERRORS = {
         "code": 1010,
         "message": "The request body format is invalid or missing required structure."
     },
-    "UNAUTHORIZED_SCRAPER_ACCESS": {
+    "UNAUTHORIZED_ACCESS": {
         "code": 1011,
-        "message": "Access to scraper service is unauthorized or misconfigured."
+        "message": "Access to service is unauthorized."
     }
 }

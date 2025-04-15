@@ -5,3 +5,4 @@ pydantic
 
 python-dotenv      # if you're using .env for configs or tokens
 apify-client
+textblob

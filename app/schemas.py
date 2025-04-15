@@ -3,6 +3,7 @@ from typing import List, Optional
 
 
 class ProfileListRequest(BaseModel):
+    signature: str
     profile_urls: List[str]
 
 class FeatureResponse(BaseModel):

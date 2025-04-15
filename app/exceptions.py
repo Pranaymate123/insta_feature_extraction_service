@@ -16,3 +16,11 @@ class GenericInternalException(HTTPException):
             "details": details
         })
 
+
+class UnauthorizedAccessException(HTTPException):
+    def __init__(self, code: int, message: str, details: str = None):
+        super().__init__(status_code=401, detail={
+            "code": code,
+            "message": message,
+            "details": details
+        })

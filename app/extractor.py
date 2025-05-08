@@ -1,63 +1,75 @@
-import httpx
-from app.config import APIFY_API_TOKEN, APIFY_TASK_ID
-from app.utils import *
+# extractor.py
+from apify_client import ApifyClient
 import logging
+from fastapi import HTTPException
+from app.config import APIFY_API_TOKEN, SPAM_WORDS, SUSPICIOUS_WORDS
+from app.errors import ERRORS
+from app.exceptions import GenericInternalException
+from app.utils import *
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 
-
-async def extract_features_from_instagram(profile_url: str) -> dict:
-    url = f"https://api.apify.com/v2/actor-tasks/{APIFY_TASK_ID}/run-sync-get-dataset-items?token={APIFY_API_TOKEN}"
+async def extract_features_from_instagram(profile_urls: list) -> list:
+    """
+    Extract features for a list of Instagram profile URLs by running the Apify actor via SDK.
+    """
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:  # Set timeout to 30 seconds
-            response = await client.get(url)
-            response.raise_for_status()  # Raises an exception for 4xx or 5xx status codes
+        # Initialize the Apify client
+        client = ApifyClient(APIFY_API_TOKEN)
 
-            data = response.json()[0]  # Take the first item from the dataset
+        # Prepare the actor input
+        run_input = {
+            "directUrls": profile_urls,
+            "resultsType": "details"  # This tells Apify to return profile-level data
+        }
 
-    except httpx.TimeoutException:
-        logging.error(f"Request to Apify API timed out. URL: {url}")
-        return {"error": "Request timed out"}
+        # Run the Apify actor and wait for it to finish
+        run = client.actor("apify/instagram-scraper").call(run_input=run_input)
 
-    except httpx.HTTPStatusError as e:
-        logging.error(f"HTTP error occurred: {e.response.status_code}. URL: {url}")
-        return {"error": f"HTTP error occurred: {e.response.status_code}"}
+        # Fetch results from dataset
+        scraped_data = list(client.dataset(run["defaultDatasetId"]).iterate_items())
 
-    except httpx.RequestError as e:
-        logging.error(f"An error occurred while requesting {url}: {e}")
-        return {"error": f"An error occurred: {e}"}
+    except GenericInternalException as e:
+        raise e
 
     except Exception as e:
-        logging.error(f"Unexpected error occurred: {str(e)}")
-        return {"error": "An unexpected error occurred"}
+        logging.error(f"Apify client error: {str(e)}")
+        raise GenericInternalException(
+            code=ERRORS["INTERNAL_ERROR"]["code"],
+            message=ERRORS["INTERNAL_ERROR"]["message"],
+            details="Failed during profile extraction."
+        )
 
-    # Extract data from the response
-    username = data.get("username", "")
-    bio = data.get("biography", "")
-    followers = data.get("followersCount", 0)
-    follows = data.get("followsCount", 1)
-    posts = data.get("postsCount", 0)
-    highlight_reels = data.get("highlightReelCount", 0)
 
-    # Calculate features
-    features = {
-        "username_length": len(username),
-        "num_digits_in_username": count_digits(username),
-        "profile_has_picture": bool(data.get("profilePicUrlHD")),
-        "profile_has_bio": bool(bio.strip()),
-        "bio_word_count": len(bio.split()),
-        "spam_word_count": count_word_occurrences(bio, SPAM_WORDS),
-        "suspicious_words_in_bio": count_word_occurrences(bio, SUSPICIOUS_WORDS),
-        "bio_sentiment_score": sentiment_score(bio),
-        "followers_count": followers,
-        "follows_count": follows,
-        "friend_follower_ratio": round(follows / (followers + 1e-5), 2),
-        "posts_count": posts,
-        "activity_score": round((posts + highlight_reels) / (followers + 1), 2),
-        "joined_recently": data.get("joinedRecently", False),
-        "is_verified": data.get("verified", False),
-    }
 
-    return features
+    features_list = []
+    for profile_data in scraped_data:
+        bio = profile_data.get("biography", "")
+        followers = profile_data.get("followersCount", 0)
+        follows = profile_data.get("followsCount", 1)
+        posts = profile_data.get("postsCount", 0)
+        highlight_reels = profile_data.get("highlightReelCount", 0)
+
+        features = {
+            "username_length": len(profile_data.get("username", "")),
+            "num_digits_in_username": count_digits(profile_data.get("username", "")),
+            "profile_has_picture": int(bool(profile_data.get("profilePicUrlHD"))),
+            "profile_has_bio": int(bool(bio.strip())),
+            "bio_word_count": len(bio.split()),
+            "spam_word_count": count_word_occurrences(bio, SPAM_WORDS),
+            "suspicious_words_in_bio": count_word_occurrences(bio, SUSPICIOUS_WORDS),
+            "bio_sentiment_score": sentiment_score(bio),
+            "followers_count": followers,
+            "follows_count": follows,
+            "friend_follower_ratio": round(follows / (followers + 1e-5), 2),
+            "posts_count": posts,
+            "activity_score": round((posts + highlight_reels) / (followers + 1), 2),
+            "joined_recently": int(profile_data.get("joinedRecently", False)),
+            "is_verified": int(profile_data.get("verified", False)),
+        }
+
+        features_list.append(features)
+
+    print("Feature List" , features_list)
+    return features_list

@@ -13,14 +13,27 @@ from app.exceptions import GenericInternalException
 from app.exception_handler import generic_internal_exception_handler
 import logging
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 app = FastAPI(title="Instagram Feature Extraction Service")
 logging.basicConfig(level=logging.INFO)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or set this to your React frontend URL like "http://localhost:3000"
+    allow_credentials=True,
+    allow_methods=["*"],  # allow all methods like POST, GET, OPTIONS etc.
+    allow_headers=["*"],
+)
+
 @app.post("/predict", response_model=PredictionResponse)
 async def extract_profiles(request: ProfileListRequest):
 
-    #check request is from authenticated user
+    print("Signature",request.signature)
+    print("Profile_Urls",request.profile_urls)
+
     message_string = ",".join(request.profile_urls)
 
     try:

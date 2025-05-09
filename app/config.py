@@ -1,3 +1,14 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Environment-based configuration
+PREDICTION_SERVICE_URL = os.getenv("PREDICTION_SERVICE_URL")
+
+
+
 APIFY_API_TOKEN = "apify_api_OyoMnIXPym8cdaLzvNWxBh1RU3g3JF3WXvsR"
 # APIFY_TASK_ID = "xusQysP0PLJAhRmOc"
 # APIFY_ACTOR_ID = "drobnikj/instagram-profile-scraper"
@@ -13,8 +24,6 @@ SPAM_WORDS = [
     "best price", "hot deal", "special offer", "shopping", "purchase"
 ]
 
-
-PREDICTION_SERVICE_URL = "https://fake-profile-detection-kbyl.onrender.com/predict-profiles"
 
 # My service API_SECRET_KEY
 API_SECRET_KEY = "B7@dX#9Kq$1m^tFW!ZgL&pY82uERvj5A*hM0Nc!xoQz4UVSfb6TLkwC#iD3n%JM"

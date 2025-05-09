@@ -14,7 +14,7 @@ SPAM_WORDS = [
 ]
 
 
-PREDICTION_SERVICE_URL = "https://fake-profile-detection-kbyl.onrender.com/predict-profiles"
+PREDICTION_SERVICE_URL = "https://fake-profile-detection-kbyl.onrender.com"
 
 # My service API_SECRET_KEY
 API_SECRET_KEY = "B7@dX#9Kq$1m^tFW!ZgL&pY82uERvj5A*hM0Nc!xoQz4UVSfb6TLkwC#iD3n%JM"

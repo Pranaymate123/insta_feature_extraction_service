@@ -25,8 +25,6 @@ SPAM_WORDS = [
 ]
 
 
-PREDICTION_SERVICE_URL = "http://127.0.0.1:8000/predict-profiles"
-
 # My service API_SECRET_KEY
 API_SECRET_KEY = "B7@dX#9Kq$1m^tFW!ZgL&pY82uERvj5A*hM0Nc!xoQz4UVSfb6TLkwC#iD3n%JM"
 
